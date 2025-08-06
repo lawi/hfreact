@@ -1,0 +1,62 @@
+.board-container {
+    position: relative;
+    width: 420px;
+    height: 360px;
+    margin-top: 20px;
+  }
+  
+  .column-select {
+    display: flex;
+    justify-content: space-between;
+    width: 420px;
+  }
+  
+  .column-select button {
+    width: 60px;
+    height: 50px;
+    padding: 10px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .disc-layer {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 40px);
+    z-index: 1;
+  }
+  
+  .disc {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+  }
+  
+  .drop {
+    animation: fall 0.3s ease-out;
+  }
+  
+  @keyframes fall {
+    0% {
+      transform: translateY(-150px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+  }
+  
+  .board-foreground {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
