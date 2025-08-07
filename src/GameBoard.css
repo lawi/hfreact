@@ -36,20 +36,30 @@
   }
   
   .drop {
-    animation: fall 0.3s ease-out;
+    animation: fall  0.4s ease-out forwards;
+    transform: translateY(-150px); /* Start ganz oben */
+    opacity: 0;
   }
   
   @keyframes fall {
     0% {
-      transform: translateY(-150px);
-      opacity: 0;
+        transform: translateY(-150px);
+        opacity: 0;
+    }
+    75% {
+        transform: translateY(var(--targetY, 0px));
+        opacity: 1;
+    }
+    82% {
+        transform: translateY(calc(var(--targetY, 0px) - 15px));
+        opacity: 1;
     }
     100% {
-      transform: translateY(0px);
-      opacity: 1;
+        transform: translateY(var(--targetY, 0px));
+        opacity: 1;
     }
   }
-  
+   
   .board-foreground {
     position: absolute;
     top: 40px;

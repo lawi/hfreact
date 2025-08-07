@@ -59,10 +59,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ keyReset }) => {
                 src={cell=='red' ? redDisc : yellowDisc}
                 className="disc drop"
                 style={{
-                  top: `${row * 60}px`,
-                  left: `${col * 60}px`,
-                  animationDelay: `${(ROWS - row) * 0.2}s`,
-                }}
+                    top: 0,
+                    left: `${col * 60}px`,
+                    
+                    ['--targetY' as any]: `${row * 60}px`,
+                    animationDelay: `${(ROWS - row) * 0.05}s`,
+                  }}
               />
             ) : null
           )
