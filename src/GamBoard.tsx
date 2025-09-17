@@ -12,16 +12,15 @@ const STATE_YELLOW = "Yellow Players Move"
 const STATE_RED = "Red Players Move"
 const STATE_YELLOW_WIN = "Yellow Wins"
 const STATE_RED_WIN = "Red Wins"
-//type DiscColor = 'red' | 'yellow' | null;
 
-interface GameBoardProps {
+type GameBoardProps = {
   keyReset: number; 
   keyGo: number;
 }
   
 
 const GameBoard: React.FC<GameBoardProps> = ({ keyReset, keyGo }) => {
-  const [, forceRender] = useReducer((x) => x + 1, 0);
+  const [, forceRender] = useReducer((x) => x + 1, 0)
   const [stateDescription, setStateDescription] = useState(STATE_RED)
 
   // initialize & start a new game once
@@ -33,20 +32,21 @@ const GameBoard: React.FC<GameBoardProps> = ({ keyReset, keyGo }) => {
   }, [keyReset])
 
   useEffect(() => {
-     calcComputerMove()
+    if(keyGo == 0) return
+    calcComputerMove()
   }, [keyGo])
 
-  const rows = Engine.ROWS;
-  const cols = Engine.COLUMNS;
-  const board = Engine.getBoard();
+  const rows = Engine.ROWS
+  const cols = Engine.COLUMNS
+  const board = Engine.getBoard()
   
   const calcComputerMove = async () => {
-    const aiMove = await Engine.calcMoveAsync();
+    const aiMove = await Engine.calcMoveAsync()
     if (aiMove !== Engine.NA && Engine.isMovePossible(aiMove)) {
-      Engine.makeMove(aiMove);
+      Engine.makeMove(aiMove)
       setNewState()
     }
-    forceRender();
+    forceRender()
   }
 
   const setNewState = () => {
@@ -100,7 +100,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ keyReset, keyGo }) => {
             Array.from({ length: cols }).map((_, c) => {
               const idx = r * cols + c;              
               const v = board[idx];                  
-              if (v === 0) return null;
+              if (v === 0) return null
               return (
                 <img
                   key={`${r}-${c}`}                  
@@ -114,14 +114,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ keyReset, keyGo }) => {
                   }}
                   alt=""
                 />
-              );
+              )
             })
           )}
         </div>
         <img src={boardImage} className="board-foreground" />
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default GameBoard;
