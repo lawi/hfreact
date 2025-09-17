@@ -1,76 +1,125 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import './GameBoard.css';
 import boardImage from '/board.png'
 import yellowDisc from '/yellow.png'
 import redDisc from '/red.png'
 import yellowDropper from '/dropYellow.png'
 import redDropper from '/dropRed.png'
+import Engine from './Engine.ts'
 
-const ROWS = 6;
-const COLUMNS = 7;
-
-type DiscColor = 'red' | 'yellow' | null;
+const CELL = 60
+const STATE_YELLOW = "Yellow Players Move"
+const STATE_RED = "Red Players Move"
+const STATE_YELLOW_WIN = "Yellow Wins"
+const STATE_RED_WIN = "Red Wins"
+//type DiscColor = 'red' | 'yellow' | null;
 
 interface GameBoardProps {
-    keyReset: number; 
-  }
+  keyReset: number; 
+  keyGo: number;
+}
   
 
-const GameBoard: React.FC<GameBoardProps> = ({ keyReset }) => {
-    const [board, setBoard] = useState<DiscColor[][]>(
-        Array.from({ length: ROWS }, () => Array(COLUMNS).fill(null))
-    );
-    const [currentPlayer, setCurrentPlayer] = useState<DiscColor>('red');
-      
-    // Wenn keyReset sich ändert, setzen wir das Spiel zurück
-    React.useEffect(() => {
-        setBoard(Array.from({ length: ROWS }, () => Array(COLUMNS).fill(null)));
-        setCurrentPlayer('red');
-    }, [keyReset]);
+const GameBoard: React.FC<GameBoardProps> = ({ keyReset, keyGo }) => {
+  const [, forceRender] = useReducer((x) => x + 1, 0);
+  const [stateDescription, setStateDescription] = useState(STATE_RED)
 
-  const handleColumnClick = (col: number) => {
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (board[row][col] === null) {
-        const newBoard = board.map(row => [...row]); // Deep copy
-        newBoard[row][col] = currentPlayer;
+  // initialize & start a new game once
+  useEffect(() => {
+    Engine.getInstance()
+    Engine.newGame()
+    setNewState()
+    forceRender()
+  }, [keyReset])
 
-        setBoard(newBoard);
-        setCurrentPlayer(currentPlayer === 'red' ? 'yellow' : 'red');
-        break;
+  useEffect(() => {
+     calcComputerMove()
+  }, [keyGo])
+
+  const rows = Engine.ROWS;
+  const cols = Engine.COLUMNS;
+  const board = Engine.getBoard();
+  
+  const calcComputerMove = async () => {
+    const aiMove = await Engine.calcMoveAsync();
+    if (aiMove !== Engine.NA && Engine.isMovePossible(aiMove)) {
+      Engine.makeMove(aiMove);
+      setNewState()
+    }
+    forceRender();
+  }
+
+  const setNewState = () => {
+    if (Engine.isGameEnd()) {
+      if(Engine.getSide() == Engine.SIDE_RED) {
+        setStateDescription(STATE_YELLOW_WIN)
+      } else {
+        setStateDescription(STATE_RED_WIN)
+      }
+    } else {
+      if(Engine.getSide() == Engine.SIDE_RED) {
+        setStateDescription(STATE_RED)
+      } else {
+        setStateDescription(STATE_YELLOW)
       }
     }
+  }
+
+  const handleColumnClick = async (c: number) => {
+    if (!Engine.isMovePossible(c)) return;
+    Engine.makeMove(c);
+    forceRender();
+
+    const aiMove = await Engine.calcMoveAsync(); 
+    if (aiMove !== Engine.NA && Engine.isMovePossible(aiMove)) {
+      Engine.makeMove(aiMove);
+      setNewState()
+    }
+    forceRender();
   };
 
   return (
-    <div className="board-container">
-      <div className="column-select">
-        {Array.from({ length: COLUMNS }).map((_, col) => (
-          <button key={col} onClick={() => handleColumnClick(col)}>
-            <img src={currentPlayer === 'red' ? redDropper: yellowDropper} width= '24px'/>
-          </button>
-        ))}
+    <div>
+      <div className="state-view">
+        {stateDescription}
       </div>
-      <div className="disc-layer">
-        {board.map((rowArr, row) =>
-          rowArr.map((cell, col) =>
-            cell ? (
+      <div className="board-container">
+        <div className="column-select">
+          {Array.from({ length: cols }).map((_, col) => (
+            <button key={col} onClick={() => handleColumnClick(col)}>
               <img
-                key={`${row}-${col}-${cell}`}
-                src={cell=='red' ? redDisc : yellowDisc}
-                className="disc drop"
-                style={{
-                    top: 0,
-                    left: `${col * 60}px`,
-                    
-                    ['--targetY' as any]: `${row * 60}px`,
-                    animationDelay: `${(ROWS - row) * 0.05}s`,
-                  }}
+                src={Engine.getSide() === Engine.SIDE_RED ? redDropper : yellowDropper}
+                width="24"
+                alt=""
               />
-            ) : null
-          )
-        )}
+            </button>
+          ))}
+        </div>
+        <div className="disc-layer">
+          {Array.from({ length: rows }).flatMap((_, r) =>
+            Array.from({ length: cols }).map((_, c) => {
+              const idx = r * cols + c;              
+              const v = board[idx];                  
+              if (v === 0) return null;
+              return (
+                <img
+                  key={`${r}-${c}`}                  
+                  src={v === Engine.SIDE_RED ? redDisc : yellowDisc}
+                  className="disc drop"
+                  style={{
+                    left: `${c * CELL}px`,
+                    top: 0,
+                    ['--targetY' as any]: `${r * CELL}px`, 
+                    animationDelay: `${(rows - r) * 0.05}s`,
+                  }}
+                  alt=""
+                />
+              );
+            })
+          )}
+        </div>
+        <img src={boardImage} className="board-foreground" />
       </div>
-      <img src={boardImage} className="board-foreground" />
     </div>
   );
 };
